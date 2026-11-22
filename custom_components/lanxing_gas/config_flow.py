@@ -15,6 +15,7 @@ from .const import (
     CONF_CUSTCODE,
     CONF_CUSTNAME,
     CONF_DETAIL_ENDPOINT,
+    CONF_GATEWAY_URL,
     CONF_HEADERS,
     CONF_INFO_ENDPOINT,
     CONF_METER_ENDPOINT,
@@ -62,6 +63,9 @@ def _advanced_schema(defaults: Mapping[str, Any]) -> vol.Schema:
             ): cv.string,
             vol.Optional(
                 CONF_DETAIL_ENDPOINT, default=defaults.get(CONF_DETAIL_ENDPOINT, "")
+            ): cv.string,
+            vol.Optional(
+                CONF_GATEWAY_URL, default=defaults.get(CONF_GATEWAY_URL, "")
             ): cv.string,
             vol.Optional(CONF_HEADERS, default=defaults.get(CONF_HEADERS, "")): cv.string,
             vol.Optional(
