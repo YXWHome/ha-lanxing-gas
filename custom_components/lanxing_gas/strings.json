@@ -1,0 +1,55 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "接入宁夏兰星天然气",
+        "description": "用户编码、用户名称、预留手机号三项必填（用于精确锁定您本人的账户，避免查到同名账户）。OpenID 可选，填写后显示实时剩余气量/累计用气/结算时间。",
+        "data": {
+          "custcode": "用户编码（12位数字或显示编号）",
+          "custname": "用户名称（户主姓名）",
+          "phone": "预留手机号（燃气公司登记的号码）",
+          "openid": "OpenID（可选，解锁实时余量）"
+        }
+      },
+      "reconfigure": {
+        "title": "高级设置",
+        "description": "仅当燃气公司接口变更时需要修改。",
+        "data": {
+          "search_endpoint": "账户查询接口 URL",
+          "info_endpoint": "账户详情接口 URL",
+          "meter_endpoint": "表信息接口 URL",
+          "detail_endpoint": "实时余量接口 URL",
+          "headers": "请求头",
+          "method": "请求方法",
+          "scan_interval": "轮询间隔（分钟）"
+        }
+      }
+    },
+    "error": {
+      "required": "用户编码和用户名称不能为空。",
+      "no_accounts": "未查到该用户名下的账户，请核对编码和名称。",
+      "invalid_response": "接口返回异常，请检查接口参数。",
+      "cannot_connect": "无法连接接口，请检查网络。"
+    },
+    "abort": {
+      "already_configured": "该用户已配置。",
+      "reconfigure_successful": "配置已更新。"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "账户余额"
+      },
+      "remaining_gas": {
+        "name": "剩余气量"
+      },
+      "total_gas": {
+        "name": "累计用气"
+      },
+      "last_settlement": {
+        "name": "上次结算"
+      }
+    }
+  }
+}
