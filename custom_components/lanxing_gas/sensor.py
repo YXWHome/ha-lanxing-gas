@@ -106,12 +106,18 @@ class LanxingGasSensor(CoordinatorEntity[LanxingGasCoordinator], SensorEntity):
         self._cust_id = cust_id
         self._index = index
         self._attr_unique_id = f"{cust_id}_{description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, cust_id)},
-            name=f"兰星燃气 {cust_id}",
-            manufacturer="宁夏兰星天然气开发有限公司",
-            model="远传表-NB",
-        )
+        data = coordinator.data or []
+        reading = data[index] if index < len(data) else None
+        # 制造商/型号取服务器返回的表具信息，取不到就不写（不冒充燃气公司）
+        device_info: dict[str, Any] = {
+            "identifiers": {(DOMAIN, cust_id)},
+            "name": f"兰星燃气 {cust_id}",
+        }
+        if reading and reading.manufacturer:
+            device_info["manufacturer"] = reading.manufacturer
+        if reading and reading.meter_type:
+            device_info["model"] = reading.meter_type
+        self._attr_device_info = DeviceInfo(**device_info)
 
     @property
     def native_value(self):
