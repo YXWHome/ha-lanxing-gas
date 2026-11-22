@@ -69,6 +69,40 @@ DEFAULT_SCAN_INTERVAL = 10
 DEFAULT_TIMEZONE = "Asia/Shanghai"
 DEFAULT_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+# 银川市居民生活用气阶梯气价（来源：宁夏兰星天然气官方公众号公示，
+# 依据银发改发〔2023〕150号，2023-07-20 起执行；单价 元/方，按自然年用量）。
+# 若政策调整，更新这三档边界/单价即可。
+TIER_PRICES = (
+    (336.0, 2.09),   # 第一档 0-336(含)
+    (480.0, 2.51),   # 第二档 336-480(含)
+    (float("inf"), 3.14),  # 第三档 >480
+)
+# 壁挂炉用户档位（居民采暖），当前集成默认用居民生活档；如需可切换。
+TIER_PRICES_HEATING = (
+    (2245.0, 2.09),
+    (3075.0, 2.51),
+    (float("inf"), 3.14),
+)
+
+
+def marginal_price(annual_usage: float, heating: bool = False) -> float:
+    """Return the marginal (current tier) unit price for a given annual usage."""
+    tiers = TIER_PRICES_HEATING if heating else TIER_PRICES
+    for limit, price in tiers:
+        if annual_usage <= limit:
+            return price
+    return tiers[-1][1]
+
+
+def tier_label(annual_usage: float, heating: bool = False) -> str:
+    """Return a human-readable tier label for the given annual usage."""
+    tiers = TIER_PRICES_HEATING if heating else TIER_PRICES
+    names = ("第一档", "第二档", "第三档")
+    for i, (limit, price) in enumerate(tiers):
+        if annual_usage <= limit:
+            return f"{names[i]}（{price} 元/方）"
+    return f"{names[-1]}（{tiers[-1][1]} 元/方）"
+
 
 def captured_defaults() -> dict[str, Any]:
     """Return default API parameters for a config entry."""
