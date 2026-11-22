@@ -71,6 +71,7 @@ class AccountReading:
     meter_code: str | None = None
     phone: str | None = None
     meter_type: str | None = None
+    manufacturer: str | None = None
     remote_buy_num: float | None = None
     last_buy_num: float | None = None
     last_buy_date: str | None = None
@@ -303,6 +304,7 @@ class LanxingGasApiClient:
             meter_code=str(meter.get("MeterCode") or "") or None,
             phone=str(info.get("CustTel_Mobile") or "") or None,
             meter_type=str(meter.get("MeterType_Name") or "") or None,
+            manufacturer=str(meter.get("CodeID_MeterVender_Name") or "") or None,
             remote_buy_num=_to_float(meter.get("Remote_BuyNum")),
             last_buy_num=_to_float(meter.get("IC_LastBuyNum")),
             last_buy_date=str(meter.get("IC_LastBuyDate") or "") or None,
