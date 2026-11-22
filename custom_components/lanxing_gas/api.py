@@ -186,10 +186,17 @@ class LanxingGasApiClient:
         result: dict[str, Any] = {"by_meter": {}}
         if not self.gateway_url:
             return result
+        # If the URL contains {openid}, fill it from the configured OpenID.
+        # Without an OpenID the page cannot return data, so skip early.
+        url = self.gateway_url
+        if "{openid}" in url:
+            if not self.openid:
+                return result
+            url = url.replace("{openid}", self.openid)
         session = async_get_clientsession(self.hass)
         try:
             async with session.get(
-                self.gateway_url,
+                url,
                 headers={"User-Agent": GATEWAY_UA, "Referer": GATEWAY_REFERER},
                 timeout=ClientTimeout(total=20),
             ) as response:
