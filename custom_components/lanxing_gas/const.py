@@ -38,6 +38,7 @@ CONF_SEARCH_ENDPOINT = "search_endpoint"
 CONF_INFO_ENDPOINT = "info_endpoint"
 CONF_METER_ENDPOINT = "meter_endpoint"
 CONF_DETAIL_ENDPOINT = "detail_endpoint"
+CONF_GATEWAY_URL = "gateway_url"  # 服务号余额查询页（含实时余量）
 CONF_HEADERS = "headers"
 CONF_METHOD = "method"
 CONF_SCAN_INTERVAL = "scan_interval"
@@ -54,6 +55,14 @@ DEFAULT_SEARCH_ENDPOINT = HOST_API + "/api/MiniApps_CustInfo/SearchCustWithBind"
 DEFAULT_INFO_ENDPOINT = HOST_CORE + "/api/BaseInfo/GetCustInfo"
 DEFAULT_METER_ENDPOINT = HOST_CORE + "/api/BaseInfo/GetMeterInfo"
 DEFAULT_DETAIL_ENDPOINT = HOST_API + "/api/MiniApps_UserInfo/GetBindCustInfoDetails"
+# 服务号 H5 余额页：固定 P 令牌，带微信 UA + Referer 即可返回实时余量
+# （页面 HTML 内含 剩余气量/累计用气/上次结算），作为 OpenID 接口的替代数据源
+DEFAULT_GATEWAY_URL = (
+    "http://www.lxtrq.com/WeiXin/Process/Balance.aspx"
+    "?P=CFA098A813709A7029C65BBB42C8A2DC3E39FB598F6DC67BD221DA5EB51AAC696C49F8CAF852CD1F91DEFD7C5E8A3B6CF639BD3B6E24061C"
+)
+GATEWAY_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 MicroMessenger/8.0"
+GATEWAY_REFERER = "http://www.lxtrq.com/WeiXin/Process/Index.aspx"
 DEFAULT_HEADERS = COMMON_HEADERS
 DEFAULT_METHOD = "POST"
 DEFAULT_SCAN_INTERVAL = 10
@@ -68,6 +77,7 @@ def captured_defaults() -> dict[str, Any]:
         CONF_INFO_ENDPOINT: DEFAULT_INFO_ENDPOINT,
         CONF_METER_ENDPOINT: DEFAULT_METER_ENDPOINT,
         CONF_DETAIL_ENDPOINT: DEFAULT_DETAIL_ENDPOINT,
+        CONF_GATEWAY_URL: DEFAULT_GATEWAY_URL,
         CONF_HEADERS: DEFAULT_HEADERS,
         CONF_METHOD: DEFAULT_METHOD,
         CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
