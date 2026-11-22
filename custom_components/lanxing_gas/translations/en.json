@@ -1,0 +1,55 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Ningxia Lanxing Natural Gas",
+        "description": "Customer code, name and reserved phone are all required to isolate your own accounts from namesakes. OpenID is optional and unlocks real-time gas volume.",
+        "data": {
+          "custcode": "Customer code (12 digits or display number)",
+          "custname": "Customer name",
+          "phone": "Reserved phone (registered with the gas company)",
+          "openid": "OpenID (optional, unlocks real-time volume)"
+        }
+      },
+      "reconfigure": {
+        "title": "Advanced settings",
+        "description": "Only change when the gas company API changes.",
+        "data": {
+          "search_endpoint": "Account search endpoint URL",
+          "info_endpoint": "Account info endpoint URL",
+          "meter_endpoint": "Meter info endpoint URL",
+          "detail_endpoint": "Real-time volume endpoint URL",
+          "headers": "Headers",
+          "method": "HTTP method",
+          "scan_interval": "Polling interval (minutes)"
+        }
+      }
+    },
+    "error": {
+      "required": "Customer code and name are required.",
+      "no_accounts": "No accounts found. Check code and name.",
+      "invalid_response": "Unexpected API response.",
+      "cannot_connect": "Cannot reach the API. Check the network."
+    },
+    "abort": {
+      "already_configured": "This user is already configured.",
+      "reconfigure_successful": "Configuration updated."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Account balance"
+      },
+      "remaining_gas": {
+        "name": "Remaining gas"
+      },
+      "total_gas": {
+        "name": "Total gas used"
+      },
+      "last_settlement": {
+        "name": "Last settlement"
+      }
+    }
+  }
+}
