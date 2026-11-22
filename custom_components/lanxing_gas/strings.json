@@ -19,6 +19,7 @@
           "info_endpoint": "账户详情接口 URL",
           "meter_endpoint": "表信息接口 URL",
           "detail_endpoint": "实时余量接口 URL",
+          "gateway_url": "实时余量页面 URL（服务号余额页）",
           "headers": "请求头",
           "method": "请求方法",
           "scan_interval": "轮询间隔（分钟）"
