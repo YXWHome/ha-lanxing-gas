@@ -1,0 +1,48 @@
+宁夏兰星天然气 · Home Assistant 集成 使用说明
+================================================
+
+【已逆向完成的接口链路】（无需抓包、无需密码、无需扫码）
+服务服务器：www.lxtrq.com（42.63.19.6，宁夏银川联通）
+- 账户查询：POST https://www.lxtrq.com:8826/api/MiniApps_CustInfo/SearchCustWithBind
+  data: {openid:"", custcode:<用户编码>, custname:<用户名称>}
+- 账户详情：POST https://www.lxtrq.com:8827/api/BaseInfo/GetCustInfo
+  data: {CustID:<内部数字ID>}
+- 实时余量（可选）：POST https://www.lxtrq.com:8826/api/MiniApps_UserInfo/GetBindCustInfoDetails
+  data: {MeterID, CustID, OpenID:<真实微信OpenID>}
+
+【实测结论】
+1. 用户编码 + 用户名称 → 可查到该户主名下所有燃气账户（custid、编号、地址）
+2. custid → 可查到账户余额、户主、地址、表号（完全免登录）
+3. 截图里的「56.00方 / 累计1042方 / 上次结算」是远传表实时读数，
+   只在第 3 个接口里，且必须要微信为该账户生成的真实 OpenID。
+   占位/假 OpenID 会返回全 null。OpenID 本地已被小程序清空，无法自动获取。
+
+【添加集成】
+1. 把 custom_components/lanxing_gas 拷到 HA 的 config/custom_components/
+2. 重启 HA → 设置 → 设备与服务 → 添加集成 → 搜索「宁夏兰星天然气」
+3. 填写（与小程序绑定页一致，前三必填、最后一个选填）：
+   - 用户编码：必填，如 <你的用户编码>（12位编码，或显示编号）
+   - 用户名称：必填，户主姓名，如 <你的姓名>
+   - 预留手机号：必填，燃气公司登记的号码，如 <你登记的手机号>
+   - OpenID：选填；填了才会出现「剩余气量/累计用气/上次结算」三个传感器
+4. 手机号的作用：编码+名称会查出所有同名账户（实测"<你的姓名>"有7个），
+   集成内部用手机号精确过滤，只保留您本人的账户，避免串户。
+5. 每个匹配账户生成一台设备，含「账户余额」传感器；填了 OpenID 再加三个实时传感器。
+
+【如何拿到 OpenID（可选，用于解锁实时三字段）】
+OpenID 是微信给「你的微信号 + 兰星天然气小程序」生成的固定串（形如 o7xxxxxxxx）。
+获取方式（任选）：
+- 安卓手机装 HTTPCanary/小黄鸟，抓小程序 minLogin 的返回 JSON，取 openid 字段
+- 或用 Charles 抓手机小程序流量（手机 WiFi 代理到电脑 + 装 CA 证书）
+- 拿到后填入集成配置即可，长期有效
+
+【文件说明】
+- const.py：所有接口常量
+- api.py：查询逻辑（免登录两段式 + 可选实时查询）
+- coordinator.py：定时轮询
+- sensor.py：每个账户的传感器实体
+- config_flow.py：配置界面（编码+名称必填，OpenID 可选）
+- example_config.json：填写示例
+
+【合规提醒】
+仅用于查询自己名下的账户；请勿高频轮询（默认10分钟）或用于他人账户。
