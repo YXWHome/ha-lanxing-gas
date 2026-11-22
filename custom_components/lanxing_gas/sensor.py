@@ -36,15 +36,6 @@ class LanxingGasSensorDescription(SensorEntityDescription):
 
 SENSORS: tuple[LanxingGasSensorDescription, ...] = (
     LanxingGasSensorDescription(
-        key="balance",
-        translation_key="balance",
-        device_class=SensorDeviceClass.MONETARY,
-        state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
-        icon="mdi:cash",
-        value_fn=lambda r: r.balance,
-    ),
-    LanxingGasSensorDescription(
         key="estimated_balance",
         translation_key="estimated_balance",
         device_class=SensorDeviceClass.MONETARY,
