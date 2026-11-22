@@ -42,6 +42,9 @@
       "balance": {
         "name": "账户余额"
       },
+      "estimated_balance": {
+        "name": "预估余额"
+      },
       "remaining_gas": {
         "name": "剩余气量"
       },
