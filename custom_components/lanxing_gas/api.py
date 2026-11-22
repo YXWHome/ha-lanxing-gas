@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Mapping
@@ -21,6 +22,7 @@ from .const import (
     CONF_CUSTCODE,
     CONF_CUSTNAME,
     CONF_DETAIL_ENDPOINT,
+    CONF_GATEWAY_URL,
     CONF_HEADERS,
     CONF_INFO_ENDPOINT,
     CONF_METER_ENDPOINT,
@@ -29,7 +31,10 @@ from .const import (
     CONF_PHONE,
     CONF_SEARCH_ENDPOINT,
     DEFAULT_DETAIL_ENDPOINT,
+    DEFAULT_GATEWAY_URL,
     DEFAULT_HEADERS,
+    GATEWAY_REFERER,
+    GATEWAY_UA,
     DEFAULT_INFO_ENDPOINT,
     DEFAULT_METER_ENDPOINT,
     DEFAULT_METHOD,
@@ -113,6 +118,9 @@ class LanxingGasApiClient:
         self.cust_name = str(config.get(CONF_CUSTNAME, "") or "").strip()
         self.phone = str(config.get(CONF_PHONE, "") or "").strip()
         self.openid = str(config.get(CONF_OPENID, "") or "").strip()
+        self.gateway_url = str(
+            config.get(CONF_GATEWAY_URL, DEFAULT_GATEWAY_URL) or DEFAULT_GATEWAY_URL
+        )
         self.search_endpoint = str(
             config.get(CONF_SEARCH_ENDPOINT, DEFAULT_SEARCH_ENDPOINT)
             or DEFAULT_SEARCH_ENDPOINT
@@ -166,6 +174,50 @@ class LanxingGasApiClient:
 
     def _ok(self, body: Mapping[str, Any]) -> bool:
         return str(body.get("RespCode", "")) == "10000"
+
+    async def async_gateway_realtime(self) -> dict[str, Any]:
+        """Fetch real-time volume from the service-account Balance page.
+
+        The WeChat service-account H5 page renders live meter values directly
+        in its HTML. With the fixed P token plus a WeChat UA/Referer it is
+        publicly readable and does not need an OpenID or login session.
+        Returns keys: last_gas, total_gas, last_settled, openid, by_meter.
+        """
+        result: dict[str, Any] = {"by_meter": {}}
+        if not self.gateway_url:
+            return result
+        session = async_get_clientsession(self.hass)
+        try:
+            async with session.get(
+                self.gateway_url,
+                headers={"User-Agent": GATEWAY_UA, "Referer": GATEWAY_REFERER},
+                timeout=ClientTimeout(total=20),
+            ) as response:
+                html = await response.text()
+        except ClientError as err:
+            _LOGGER.debug("网关余额页请求失败: %s", err)
+            return result
+
+        # OpenID embedded in the payment link
+        m_openid = re.search(r"OpenID=([A-Za-z0-9_-]{20,40})", html)
+        if m_openid:
+            result["openid"] = m_openid.group(1)
+
+        # Each meter block: <div class="meter-item">... meter-label ... values
+        for block in re.findall(r'<div class="meter-item">(.*?)</div></div>', html, re.S):
+            m_meter = re.search(r"(\d{10})\s*\(类型:(\d+)\)", block)
+            m_remain = re.search(r'meter-value[^>]*>([\d.]+)\s*方', block)
+            m_total = re.search(r"累计用气[:：]\s*([\d.]+)\s*方", block)
+            m_settle = re.search(r"上次结算[:：]\s*([\d-]+\s+[\d:]+)", block)
+            if not m_meter or not m_remain:
+                continue
+            meter_no = m_meter.group(1)
+            result["by_meter"][meter_no] = {
+                "last_gas": _to_float(m_remain.group(1)),
+                "total_gas": _to_float(m_total.group(1)) if m_total else None,
+                "last_settled": _to_datetime(m_settle.group(1)) if m_settle else None,
+            }
+        return result
 
     async def async_search_accounts(self) -> list[dict[str, Any]]:
         """Find all accounts for the given custcode + custname."""
