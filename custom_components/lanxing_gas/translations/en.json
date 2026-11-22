@@ -42,6 +42,9 @@
       "balance": {
         "name": "Account balance"
       },
+      "estimated_balance": {
+        "name": "Estimated balance"
+      },
       "remaining_gas": {
         "name": "Remaining gas"
       },
