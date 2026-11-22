@@ -40,6 +40,8 @@ from .const import (
     DEFAULT_METHOD,
     DEFAULT_SEARCH_ENDPOINT,
     DEFAULT_TIMEZONE,
+    marginal_price,
+    tier_label,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,6 +78,29 @@ class AccountReading:
     total_gas: float | None = None
     last_settled: datetime | None = None
     raw: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def estimated_balance(self) -> float | None:
+        """Remaining gas valued at the current tier price.
+
+        The provider's balance field is always 0 for post-paid remote meters,
+        so estimate the account value as: remaining volume x marginal tier price.
+        Tier is determined by the annual cumulative usage (total_gas).
+        """
+        if self.last_gas is None:
+            return None
+        # Whether this meter is a wall-mounted heater user (higher tier limits).
+        heating = "壁挂炉" in (self.raw.get("price_name") or "")
+        price = marginal_price(self.total_gas or 0.0, heating=heating)
+        return round(self.last_gas * price, 2)
+
+    @property
+    def current_tier(self) -> str | None:
+        """Human-readable current price tier."""
+        if self.total_gas is None:
+            return None
+        heating = "壁挂炉" in (self.raw.get("price_name") or "")
+        return tier_label(self.total_gas, heating=heating)
 
 
 def _to_float(value: Any) -> float | None:
@@ -281,7 +306,11 @@ class LanxingGasApiClient:
             remote_buy_num=_to_float(meter.get("Remote_BuyNum")),
             last_buy_num=_to_float(meter.get("IC_LastBuyNum")),
             last_buy_date=str(meter.get("IC_LastBuyDate") or "") or None,
-            raw={"account": dict(body.get("Result") or {}), "bound": dict(account)},
+            raw={
+                "account": dict(body.get("Result") or {}),
+                "bound": dict(account),
+                "price_name": str(meter.get("PriceName") or ""),
+            },
         )
 
         if self.openid:
