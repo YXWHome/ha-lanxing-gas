@@ -45,6 +45,15 @@ SENSORS: tuple[LanxingGasSensorDescription, ...] = (
         value_fn=lambda r: r.balance,
     ),
     LanxingGasSensorDescription(
+        key="estimated_balance",
+        translation_key="estimated_balance",
+        device_class=SensorDeviceClass.MONETARY,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=2,
+        icon="mdi:cash-check",
+        value_fn=lambda r: r.estimated_balance,
+    ),
+    LanxingGasSensorDescription(
         key="remaining_gas",
         translation_key="remaining_gas",
         device_class=SensorDeviceClass.VOLUME_STORAGE,
@@ -144,4 +153,12 @@ class LanxingGasSensor(CoordinatorEntity[LanxingGasCoordinator], SensorEntity):
             attrs["最近购气日期"] = reading.last_buy_date
         if reading.remote_buy_num is not None:
             attrs["远传累计购气"] = reading.remote_buy_num
+        # Stair-step pricing info (used for the estimated balance)
+        if reading.current_tier:
+            attrs["当前阶梯"] = reading.current_tier
+        if reading.last_gas is not None and reading.total_gas is not None:
+            attrs["余额推算说明"] = (
+                f"剩余 {reading.last_gas} 方 × 当前阶梯单价 = {reading.estimated_balance} 元"
+                "（接口余额恒为0，此为估算）"
+            )
         return attrs
