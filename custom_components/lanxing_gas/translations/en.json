@@ -19,6 +19,7 @@
           "info_endpoint": "Account info endpoint URL",
           "meter_endpoint": "Meter info endpoint URL",
           "detail_endpoint": "Real-time volume endpoint URL",
+          "gateway_url": "Live balance page URL",
           "headers": "Headers",
           "method": "HTTP method",
           "scan_interval": "Polling interval (minutes)"
