@@ -39,9 +39,6 @@
   },
   "entity": {
     "sensor": {
-      "balance": {
-        "name": "账户余额"
-      },
       "estimated_balance": {
         "name": "预估余额"
       },
