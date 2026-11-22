@@ -1,0 +1,7 @@
+{
+  "说明": "前三项必填（用手机号精确锁定本人账户，避免同名串户）；openid 选填，填后解锁实时余量三字段。以下均为占位示例，请替换为你自己的信息。",
+  "custcode": "YOUR_CUSTCODE",
+  "custname": "YOUR_NAME",
+  "phone": "YOUR_PHONE",
+  "openid": ""
+}
